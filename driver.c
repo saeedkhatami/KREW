@@ -4,22 +4,35 @@ typedef unsigned long long QWORD;
 typedef unsigned short WORD;
 typedef unsigned long DWORD, * PDWORD, * LPDWORD;
 
-// credits to paracord, wjcsharp, & cheat-engine's repositories, without them I wouldn't of been able to figure out the puzzel of reading and writing with kernel mode buffers & user mode memory
+// structure definitions
+typedef struct _KERNEL_READ_REQUEST
+{
+    UINT64 Address; // Source
+    PVOID Response; // Target
+    SIZE_T Size;
+} KERNEL_READ_REQUEST, *PKERNEL_READ_REQUEST;
 
-/*
+typedef struct _KERNEL_WRITE_REQUEST
+{
+    UINT64 Address; // Target
+    PVOID Value; // Source
+    SIZE_T Size;
+} KERNEL_WRITE_REQUEST, *PKERNEL_WRITE_REQUEST;
 
-paracord - https://github.com/paracorded/read_write
-wjcsharp - https://github.com/wjcsharp/wintools/blob/79b3883aacb5833d747d5bedce843086c327dff3/examples/random/ReadMemoryKernel.c
-cheat-engine - https://github.com/cheat-engine/cheat-engine/blob/master/DBKKernel/memscan.c
+typedef struct _MEMORY_REQUEST
+{
+    ULONG ProcessId;
+    KERNEL_READ_REQUEST read;
+    KERNEL_WRITE_REQUEST write;
+} MEMORY_REQUEST;
 
-*/
-
+// method definitions
 NTSTATUS RVM(ULONG PID, MEMORY_REQUEST* sent) {
     PEPROCESS Process;
     KAPC_STATE APC;
 
     if (!NT_SUCCESS(PsLookupProcessByProcessId((PVOID)PID, &Process))) // gets PEPROCESS from PID
-        return STATUS_INVALID_PARAMETER_1;
+    return STATUS_INVALID_PARAMETER_1;
 
     // Gathers needed information from Usermode Buffer
     PVOID Address = (PVOID)sent->read.Address;
@@ -81,7 +94,7 @@ NTSTATUS WVM(ULONG PID, MEMORY_REQUEST* sent) {
     KAPC_STATE APC;
 
     if (!NT_SUCCESS(PsLookupProcessByProcessId((PVOID)PID, &Process)))
-        return STATUS_INVALID_PARAMETER_1;
+    return STATUS_INVALID_PARAMETER_1;
 
     PVOID Address = (PVOID)sent->write.Address;
     SIZE_T Size = sent->write.Size;

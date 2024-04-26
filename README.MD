@@ -1,6 +1,4 @@
-# KREW
-
-## Kernel Read end(and) Write
+# KREW Kernel Read end(and) Write
 
 a more stable & secure read/write virtual memory for kernel mode drivers
 
